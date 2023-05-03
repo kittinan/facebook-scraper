@@ -1136,8 +1136,13 @@ class PostExtractor:
 
         if use_ajax_post:
             prefix_length = len('for (;;);')
-            data = json.loads(response.text[prefix_length:])  # Strip 'for (;;);'
-            for action in data['payload']['actions']:
+            text = response.text[prefix_length:]
+
+            # Fix multiple JSON objects in response
+            text = text.replace("}{", "},{")
+            text = "[" + text + "]"
+            data = json.loads(text)  # Strip 'for (;;);'
+            for action in data[0]['payload']['actions']:
                 if action["cmd"] == "replace":
                     html = utils.make_html_element(
                         action['html'],
